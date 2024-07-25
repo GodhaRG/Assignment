@@ -1,0 +1,12 @@
+
+def retrieve_bert(query, top_n=5):
+    query_embedding = sbert_model.encode([query])[0]
+    chunk_embeddings = np.array(vector_db)
+    
+    similarities = np.dot(chunk_embeddings, query_embedding) / (
+        np.linalg.norm(chunk_embeddings, axis=1) * np.linalg.norm(query_embedding)
+    )
+    top_n_indices = np.argsort(similarities)[-top_n:][::-1]
+    return top_n_indices, similarities[top_n_indices]
+from transformers import pipeline
+
