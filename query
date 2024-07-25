@@ -1,0 +1,27 @@
+import nltk
+from nltk.corpus import wordnet
+from nltk.stem import PorterStemmer
+
+
+nltk.download('wordnet')
+nltk.download('omw-1.4')
+
+def expand_query(query):
+    synonyms = set()
+    stemmer = PorterStemmer()
+    
+    for word in query.split():
+        stemmed_word = stemmer.stem(word)
+        synonyms.add(stemmed_word)
+        
+        for syn in wordnet.synsets(word):
+            for lemma in syn.lemmas():
+                synonyms.add(lemma.name().lower())
+                
+    return ' '.join(synonyms)
+
+
+query = "physics laws"
+expanded_query = expand_query(query)
+print(f"Original query: {query}")
+print(f"Expanded query: {expanded_query}")
