@@ -1,0 +1,78 @@
+import os
+import numpy as np
+from sklearn.mixture import GaussianMixture
+from sklearn.metrics import silhouette_score
+from sentence_transformers import SentenceTransformer
+from transformers import BartTokenizer, BartForConditionalGeneration
+import torch
+
+
+os.environ['HF_HUB_DISABLE_SYMLINKS_WARNING'] = '1'
+
+
+sbert_model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+
+
+bart_tokenizer = BartTokenizer.from_pretrained('facebook/bart-large-cnn')
+bart_model = BartForConditionalGeneration.from_pretrained('facebook/bart-large-cnn')
+
+# Function to determine the optimal number of clusters using silhouette score
+def find_optimal_clusters_silhouette(embeddings, max_clusters=20):
+    silhouette_scores = []
+    num_samples = len(embeddings)
+    max_clusters = min(max_clusters, num_samples - 1)
+    
+    for i in range(2, max_clusters + 1):
+        gmm = GaussianMixture(n_components=i, covariance_type='tied')
+        cluster_labels = gmm.fit_predict(embeddings)
+        silhouette_avg = silhouette_score(embeddings, cluster_labels)
+        silhouette_scores.append(silhouette_avg)
+    
+    best_n_clusters = np.argmax(silhouette_scores) + 2  # +2 because range starts from 2
+    return best_n_clusters
+
+
+def cluster_embeddings(embeddings, n_clusters):
+    gmm = GaussianMixture(n_components=n_clusters, covariance_type='tied')
+    gmm.fit(embeddings)
+    return gmm.predict_proba(embeddings), gmm.means_
+
+
+def summarize_text(text):
+    inputs = bart_tokenizer.encode("summarize: " + text, return_tensors="pt", max_length=1024, truncation=True)
+    summary_ids = bart_model.generate(inputs, max_length=150, min_length=40, length_penalty=2.0, num_beams=4, early_stopping=True)
+    summary = bart_tokenizer.decode(summary_ids[0], skip_special_tokens=True)
+    return summary
+
+
+def recursive_clustering_and_summarization(texts, max_depth=3, current_depth=0):
+    if current_depth >= max_depth or len(texts) <= 1:
+        return texts
+
+   
+    embeddings = sbert_model.encode(texts)
+
+  
+    best_n_clusters = find_optimal_clusters_silhouette(embeddings)
+
+   
+    cluster_probabilities, cluster_centers = cluster_embeddings(embeddings, best_n_clusters)
+
+   
+    cluster_texts = [[] for _ in range(best_n_clusters)]
+    for idx, text in enumerate(texts):
+        cluster_idx = cluster_probabilities[idx].argmax()
+        cluster_texts[cluster_idx].append(text)
+
+    summarized_texts = [summarize_text(' '.join(cluster)) for cluster in cluster_texts]
+
+   
+    return recursive_clustering_and_summarization(summarized_texts, max_depth, current_depth + 1)
+
+
+
+summarized_hierarchy = recursive_clustering_and_summarization(all_chunks, max_depth=3)
+
+
+for idx, summary in enumerate(summarized_hierarchy):
+    print(f"Summary {idx + 1}: {summary}")
