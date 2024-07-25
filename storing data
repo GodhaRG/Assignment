@@ -1,0 +1,39 @@
+import numpy as np
+
+
+vector_db = []
+metadata_db = []
+
+
+def store_in_vector_db(embedding, metadata):
+    vector_db.append(embedding)
+    metadata_db.append(metadata)
+import os
+
+
+def chunk_text(text, chunk_size=100):
+    words = text.split()
+    chunks = [' '.join(words[i:i + chunk_size]) for i in range(0, len(words), chunk_size)]
+    return chunks
+
+
+def read_and_chunk_text(file_path, chunk_size=100):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        text = file.read()
+    return chunk_text(text, chunk_size)
+
+
+file_paths = [
+    {"path": "C:/Desktop/Assignment/textbook1.txt", "title": "College Success", "page": 1},
+    {"path": "C:/Desktop/Assignment/textbook2.txt", "title": "Concepts of Biology", "page": 1},
+    {"path": "C:/Desktop/Assignment/textbook3.txt", "title": "Physics", "page": 1}
+]
+
+
+all_chunks = []
+metadata_list = []
+
+for file_data in file_paths:
+    chunks = read_and_chunk_text(file_data['path'])
+    all_chunks.extend(chunks)
+    metadata_list.extend([{"title": file_data["title"], "page": file_data["page"], "chunk": chunk} for chunk in chunks])
