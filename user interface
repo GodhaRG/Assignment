@@ -1,0 +1,29 @@
+pip install streamlit
+
+import streamlit as st
+from transformers import pipeline
+
+
+qa_pipeline = pipeline("question-answering")
+
+def retrieve_bert(query, top_n=5):
+    
+    pass
+
+def answer_question(question, top_n=5):
+    top_indices, _ = retrieve_bert(query=question, top_n=top_n)
+    context = ' '.join([metadata_db[idx]['chunk'] for idx in top_indices])
+    result = qa_pipeline(question=question, context=context)
+    return result['answer']
+
+
+st.title("Textbook Question Answering System")
+
+
+user_question = st.text_input("Enter your question:")
+
+
+if user_question:
+    answer = answer_question(user_question)
+    st.write(f"Question: {user_question}")
+    st.write(f"Answer: {answer}")
