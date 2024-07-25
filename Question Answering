@@ -1,0 +1,53 @@
+from transformers import pipeline
+
+
+qa_pipeline = pipeline("question-answering")
+
+
+def answer_question(question, context):
+    result = qa_pipeline(question=question, context=context)
+    return result['answer']
+
+
+def retrieve_bert(query, top_n=5):
+    query_embedding = sbert_model.encode([query])[0]
+    similarities = np.dot(vector_db, query_embedding) / (
+        np.linalg.norm(vector_db, axis=1) * np.linalg.norm(query_embedding)
+    )
+    top_n_indices = np.argsort(similarities)[-top_n:][::-1]
+    return top_n_indices, similarities[top_n_indices]
+
+question = "What are the fundamental laws of physics?"
+top_indices, _ = retrieve_bert(question, top_n=5)
+context = ' '.join([metadata_db[idx]['chunk'] for idx in top_indices])
+answer = answer_question(question, context)
+print(f"Question: {question}")
+print(f"Answer: {answer}")
+
+#2nd question and answer
+from transformers import pipeline
+
+
+qa_pipeline = pipeline("question-answering")
+
+
+def answer_question(question, context):
+    result = qa_pipeline(question=question, context=context)
+    return result['answer']
+
+
+def retrieve_bert(query, top_n=5):
+    query_embedding = sbert_model.encode([query])[0]
+    similarities = np.dot(vector_db, query_embedding) / (
+        np.linalg.norm(vector_db, axis=1) * np.linalg.norm(query_embedding)
+    )
+    top_n_indices = np.argsort(similarities)[-top_n:][::-1]
+    return top_n_indices, similarities[top_n_indices]
+
+question = "What is photosynthesis?"
+top_indices, _ = retrieve_bert(question, top_n=5)
+context = ' '.join([metadata_db[idx]['chunk'] for idx in top_indices])
+answer = answer_question(question, context)
+print(f"Question: {question}")
+print(f"Answer: {answer}")
+
