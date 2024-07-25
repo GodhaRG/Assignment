@@ -1,0 +1,9 @@
+1.Install all the necessary libraries 
+!pip install pymupdf
+!pip install scikit-learn nltk sentence-transformers openai pymilvus rank-bm25
+from tqdm import tqdm, trange
+pip install sentence-transformers scikit-learn transformers
+2.Then run the code
+3.For using the user interface- First install streamlit(pip install streamlit)
+                              -Save the script as app.py
+                              -Then run it by giving the command -streamlit run app.py
